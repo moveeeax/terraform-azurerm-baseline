@@ -9,7 +9,7 @@ composition module that gives new workloads a consistent starting point.
 
 ```hcl
 module "baseline" {
-  source = "github.com/cybercapybara/terraform-azurerm-baseline"
+  source = "github.com/moveeeax/terraform-azurerm-baseline"
 
   name                 = "platform"
   location             = "eastus"
