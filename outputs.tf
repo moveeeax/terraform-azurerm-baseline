@@ -22,3 +22,8 @@ output "storage_account_name" {
   description = "Name of the storage account."
   value       = azurerm_storage_account.this.name
 }
+
+output "activity_log_diagnostic_setting_id" {
+  description = "ID of the subscription activity log diagnostic setting, or null when disabled."
+  value       = one(azurerm_monitor_diagnostic_setting.activity_log[*].id)
+}

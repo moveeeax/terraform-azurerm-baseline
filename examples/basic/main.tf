@@ -4,7 +4,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 3.0"
+      version = ">= 3.114.0, < 5.0"
     }
   }
 }
@@ -32,4 +32,8 @@ output "resource_group_name" {
 
 output "log_analytics_workspace_id" {
   value = module.baseline.log_analytics_workspace_id
+}
+
+output "activity_log_diagnostic_setting_id" {
+  value = module.baseline.activity_log_diagnostic_setting_id
 }

@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -29,3 +32,31 @@ jobs:
         run: |
           tofu init -backend=false
           tofu validate
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: terraform-linters/setup-tflint@v4
+
+      - name: tflint
+        run: tflint --recursive
+
+  test:
+    # Runs on Terraform rather than OpenTofu because that is the toolchain the
+    # tests/ suite has been verified against. It needs >= 1.7 for mock_provider
+    # and runs fully offline against a mocked azurerm provider.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: init
+        run: terraform init -backend=false
+
+      - name: test
+        run: terraform test
