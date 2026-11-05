@@ -9,7 +9,7 @@ composition module that gives new workloads a consistent starting point.
 
 ```hcl
 module "baseline" {
-  source = "github.com/moveeeax/terraform-azurerm-baseline"
+  source = "github.com/moveeeax/terraform-azurerm-baseline?ref=v1.0.0"
 
   name                 = "platform"
   location             = "eastus"
@@ -48,11 +48,12 @@ baseline:
 | Name      | Version            |
 |-----------|--------------------|
 | terraform | >= 1.5             |
-| azurerm   | >= 3.114.0, < 5.0  |
+| azurerm   | >= 3.114.0, < 6.0  |
 
 `azurerm` 3.114.0 is the first release that exposes
 `azurerm_storage_account.https_traffic_only_enabled`; the module does not build
-on anything older. Both 3.114.0 and the 4.x line are supported.
+on anything older. The 3.x (from 3.114.0), 4.x and 5.x lines are supported; CI
+runs against the latest 5.x release. 6.x is excluded until it has been tested.
 
 ## Inputs
 
