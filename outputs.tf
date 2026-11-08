@@ -37,3 +37,8 @@ output "security_contact_id" {
   description = "ID of the Defender for Cloud security contact, or null when not managed."
   value       = one(azurerm_security_center_contact.this[*].id)
 }
+
+output "budget_id" {
+  description = "ID of the subscription consumption budget, or null when budget is not set."
+  value       = one(azurerm_consumption_budget_subscription.this[*].id)
+}

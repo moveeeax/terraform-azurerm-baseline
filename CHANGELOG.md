@@ -14,6 +14,11 @@ All notable changes to this module are documented here. The format follows
 - `security_contact`: the subscription's Defender for Cloud security contact
   (`azurerm_security_center_contact`). Defaults to `null`: no contact is managed.
 - `defender_plan_ids` and `security_contact_id` outputs.
+- `budget`: a subscription consumption budget
+  (`azurerm_consumption_budget_subscription`) that emails `contact_emails` when
+  actual cost reaches each of `thresholds` (default 80 and 100 percent of
+  `amount`). Defaults to `null`: no budget is created.
+- `budget_id` output.
 
 ## [1.1.0] - 2026-11-05
 

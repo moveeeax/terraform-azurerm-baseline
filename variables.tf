@@ -154,6 +154,58 @@ variable "security_contact" {
   }
 }
 
+variable "budget" {
+  description = <<-EOT
+    Subscription consumption budget with email alerts. null (the default) creates
+    no budget. amount is in the billing currency; thresholds are percentages of
+    amount (actual cost). start_date must be the first of a month in RFC 3339
+    form (2026-11-01T00:00:00Z); when null, the first of the month of the first
+    apply is used and later drift is ignored. name defaults to "<name>-budget".
+  EOT
+  type = object({
+    amount         = number
+    contact_emails = list(string)
+    time_grain     = optional(string, "Monthly")
+    thresholds     = optional(list(number), [80, 100])
+    start_date     = optional(string)
+    name           = optional(string)
+  })
+  default = null
+
+  validation {
+    condition     = var.budget == null ? true : var.budget.amount > 0
+    error_message = "budget.amount must be greater than 0."
+  }
+
+  validation {
+    condition     = var.budget == null ? true : length(var.budget.contact_emails) > 0 && alltrue([for e in var.budget.contact_emails : can(regex("^[^@\\s]+@[^@\\s]+$", e))])
+    error_message = "budget.contact_emails must contain at least one email address, and every entry must be one."
+  }
+
+  validation {
+    condition = var.budget == null ? true : contains(
+      ["Monthly", "Quarterly", "Annually", "BillingMonth", "BillingQuarter", "BillingAnnual"],
+      var.budget.time_grain
+    )
+    error_message = "budget.time_grain must be one of Monthly, Quarterly, Annually, BillingMonth, BillingQuarter or BillingAnnual."
+  }
+
+  validation {
+    condition = var.budget == null ? true : (
+      length(var.budget.thresholds) >= 1 &&
+      length(var.budget.thresholds) <= 5 &&
+      length(distinct(var.budget.thresholds)) == length(var.budget.thresholds) &&
+      alltrue([for t in var.budget.thresholds : t > 0 && t <= 1000])
+    )
+    error_message = "budget.thresholds must hold 1 to 5 distinct percentages, each greater than 0 and at most 1000."
+  }
+
+  validation {
+    condition     = var.budget == null ? true : var.budget.start_date == null ? true : can(regex("^[0-9]{4}-[0-9]{2}-01T00:00:00Z$", var.budget.start_date))
+    error_message = "budget.start_date must be the first of a month, formatted like 2026-11-01T00:00:00Z."
+  }
+}
+
 variable "tags" {
   description = "Map of tags applied to all baseline resources."
   type        = map(string)
