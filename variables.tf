@@ -113,6 +113,47 @@ variable "activity_log_categories" {
   }
 }
 
+variable "defender_plans" {
+  description = <<-EOT
+    Microsoft Defender for Cloud plans to set on the subscription, keyed by
+    resource type (VirtualMachines, StorageAccounts, KeyVaults, Arm, ...). tier is
+    Standard (paid) or Free; subplan is optional (e.g. P1/P2 for VirtualMachines).
+    Plans are subscription-wide and Standard is billed per protected resource, so
+    nothing is set by default.
+  EOT
+  type = map(object({
+    tier    = optional(string, "Standard")
+    subplan = optional(string)
+  }))
+  default = {}
+
+  validation {
+    condition     = alltrue([for p in values(var.defender_plans) : contains(["Free", "Standard"], p.tier)])
+    error_message = "Each defender_plans tier must be Free or Standard."
+  }
+}
+
+variable "security_contact" {
+  description = <<-EOT
+    Defender for Cloud security contact for the subscription. null (the default)
+    leaves the subscription's existing contact untouched. name defaults to
+    default1, the name azurerm 3.x used when it was optional.
+  EOT
+  type = object({
+    email               = string
+    phone               = optional(string)
+    alert_notifications = optional(bool, true)
+    alerts_to_admins    = optional(bool, true)
+    name                = optional(string, "default1")
+  })
+  default = null
+
+  validation {
+    condition     = var.security_contact == null ? true : can(regex("^[^@\\s]+@[^@\\s]+$", var.security_contact.email))
+    error_message = "security_contact.email must be an email address."
+  }
+}
+
 variable "tags" {
   description = "Map of tags applied to all baseline resources."
   type        = map(string)
