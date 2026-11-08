@@ -27,3 +27,13 @@ output "activity_log_diagnostic_setting_id" {
   description = "ID of the subscription activity log diagnostic setting, or null when disabled."
   value       = one(azurerm_monitor_diagnostic_setting.activity_log[*].id)
 }
+
+output "defender_plan_ids" {
+  description = "IDs of the Defender for Cloud pricing settings, keyed by resource type."
+  value       = { for k, p in azurerm_security_center_subscription_pricing.this : k => p.id }
+}
+
+output "security_contact_id" {
+  description = "ID of the Defender for Cloud security contact, or null when not managed."
+  value       = one(azurerm_security_center_contact.this[*].id)
+}
