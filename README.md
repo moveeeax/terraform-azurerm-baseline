@@ -81,6 +81,32 @@ module "baseline" {
 Recommended for an audited subscription: set `security_contact`, and enable the
 `Standard` plans for the resource types you actually run.
 
+## Budget
+
+`budget` is off by default. When set, it creates a consumption budget on the
+subscription and emails `contact_emails` once actual cost reaches each
+percentage in `thresholds` (80 and 100 unless given; at most five, each up to
+1000).
+
+```hcl
+module "baseline" {
+  # source, name, location, storage_account_name as above
+
+  budget = {
+    amount         = 500 # in the subscription's billing currency
+    contact_emails = ["finops@example.com"]
+    # time_grain = "Monthly", thresholds = [80, 100]
+  }
+}
+```
+
+- `start_date` must be the first of a month (`2026-11-01T00:00:00Z`). Leave it
+  unset and the module uses the first of the month of the first apply.
+- The provider replaces the budget when `start_date` changes, so the module ignores
+  later changes to it, including ones you make yourself. To move it, replace the
+  resource (`terraform apply -replace=...`).
+- Recommended: set a budget on every subscription this module bootstraps.
+
 ## Requirements
 
 | Name      | Version            |
@@ -111,6 +137,7 @@ runs against the latest 5.x release. 6.x is excluded until it has been tested.
 | `activity_log_categories`          | Activity log categories to forward.                             | `list(string)`| all 8 categories |  no   |
 | `defender_plans`                   | Defender for Cloud plans keyed by resource type (`tier`, `subplan`). Subscription-wide. | `map(object)` | `{}` | no |
 | `security_contact`                 | Defender for Cloud security contact (`email`, `phone`, `alert_notifications`, `alerts_to_admins`, `name`). | `object` | `null` | no |
+| `budget`                           | Subscription budget (`amount`, `contact_emails`, `time_grain`, `thresholds`, `start_date`, `name`). | `object` | `null` | no |
 | `tags`                             | Map of tags applied to all baseline resources.                  | `map(string)` | `{}`          |    no    |
 
 ## Outputs
@@ -125,6 +152,7 @@ runs against the latest 5.x release. 6.x is excluded until it has been tested.
 | `activity_log_diagnostic_setting_id` | ID of the activity log diagnostic setting, or `null` when disabled. |
 | `defender_plan_ids`          | IDs of the Defender for Cloud pricing settings, keyed by resource type. |
 | `security_contact_id`        | ID of the security contact, or `null` when not managed. |
+| `budget_id`                  | ID of the subscription budget, or `null` when not set. |
 
 ## Development
 

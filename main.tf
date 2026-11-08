@@ -100,3 +100,33 @@ resource "azurerm_security_center_contact" "this" {
   alert_notifications = var.security_contact.alert_notifications
   alerts_to_admins    = var.security_contact.alerts_to_admins
 }
+
+resource "azurerm_consumption_budget_subscription" "this" {
+  count = var.budget == null ? 0 : 1
+
+  name            = coalesce(var.budget.name, "${var.name}-budget")
+  subscription_id = data.azurerm_subscription.current.id
+  amount          = var.budget.amount
+  time_grain      = var.budget.time_grain
+
+  time_period {
+    # Azure requires the first of a month. plantimestamp() changes on every
+    # plan, and start_date forces replacement, hence ignore_changes below.
+    start_date = coalesce(var.budget.start_date, formatdate("YYYY-MM-01'T'00:00:00Z", plantimestamp()))
+  }
+
+  dynamic "notification" {
+    for_each = toset(var.budget.thresholds)
+
+    content {
+      threshold      = notification.value
+      operator       = "GreaterThanOrEqualTo"
+      threshold_type = "Actual"
+      contact_emails = var.budget.contact_emails
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [time_period[0].start_date]
+  }
+}
